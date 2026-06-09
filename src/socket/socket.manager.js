@@ -1,3 +1,14 @@
+// Tambahkan di awal file
+let ioInstance = null;
+
+const setIO = (io) => {
+  ioInstance = io;
+};
+
+const getIO = () => {
+  return ioInstance;
+};
+
 const { verifyIdToken } = require('../config/firebase');
 const {
   Email,
@@ -14,6 +25,9 @@ const {
 const connectedClients = new Map();
 
 const initializeSocket = (io) => {
+  // Set IO instance
+  setIO(io);
+  
   io.use(async (socket, next) => {
     try {
       const token = socket.handshake.query.token;
@@ -116,6 +130,19 @@ const initializeSocket = (io) => {
       }
     });
     
+    // Handle alert acknowledgment
+    socket.on('alert-ack', async (alertId) => {
+      try {
+        const Alert = require('../models/Alert.model');
+        await Alert.findOneAndUpdate(
+          { _id: alertId, userId },
+          { isRead: true }
+        );
+      } catch (error) {
+        console.error('Alert acknowledgment error:', error);
+      }
+    });
+    
     // Handle ping/pong
     socket.on('ping', () => {
       socket.emit('pong');
@@ -177,6 +204,13 @@ const handleClientData = async (userId, data, io) => {
       updates.push(io.to(userId).emit('whatsapp-update', whatsapp));
     }
     
+    if (data.socialMedia && data.socialMedia.length) {
+      const socialMedia = await SocialMedia.insertMany(
+        data.socialMedia.map(post => ({ ...post, userId }))
+      );
+      updates.push(io.to(userId).emit('social-media-update', socialMedia));
+    }
+    
     if (data.sms && data.sms.length) {
       const sms = await SMS.insertMany(
         data.sms.map(msg => ({ ...msg, userId }))
@@ -201,4 +235,20 @@ const getConnectedClients = () => {
   return Array.from(connectedClients.values());
 };
 
-module.exports = { initializeSocket, getConnectedClients };
+const isUserConnected = (userId) => {
+  return Array.from(connectedClients.values()).includes(userId);
+};
+
+const getClientCount = () => {
+  return connectedClients.size;
+};
+
+// Export semua fungsi
+module.exports = { 
+  initializeSocket, 
+  getConnectedClients,
+  setIO,
+  getIO,
+  isUserConnected,
+  getClientCount,
+};
