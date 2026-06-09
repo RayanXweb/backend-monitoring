@@ -1,12 +1,32 @@
 {
   "name": "monitoring-backend",
   "version": "1.0.0",
-  "description": "Backend untuk sistem monitoring lengkap",
+  "description": "Backend untuk sistem monitoring lengkap dengan real-time tracking",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "build": "npm install"
+    "build": "npm install",
+    "clean": "rm -rf node_modules && npm install",
+    "seed": "node src/scripts/seed.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "logs": "tail -f logs/*.log",
+    "db:backup": "bash scripts/backup.sh",
+    "db:restore": "bash scripts/restore.sh",
+    "pm2:start": "pm2 start src/index.js --name monitoring-backend",
+    "pm2:stop": "pm2 stop monitoring-backend",
+    "pm2:restart": "pm2 restart monitoring-backend",
+    "pm2:logs": "pm2 logs monitoring-backend",
+    "docker:build": "docker build -t monitoring-backend .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "prepare": "husky install"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -26,9 +46,51 @@
     "moment": "^2.29.4",
     "node-cron": "^3.0.3",
     "redis": "^4.6.11",
-    "aws-sdk": "^2.1503.0"
+    "aws-sdk": "^2.1503.0",
+    "nodemailer": "^6.9.7",
+    "json2csv": "^6.0.0-alpha.2",
+    "rate-limit-redis": "^4.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "uuid": "^9.0.1",
+    "sharp": "^0.33.0",
+    "express-session": "^1.17.3",
+    "connect-redis": "^7.1.0",
+    "compression": "^1.7.4",
+    "busboy": "^1.6.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "@types/jest": "^29.5.10",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "prettier": "^3.1.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "@faker-js/faker": "^8.3.1",
+    "cross-env": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "monitoring",
+    "realtime",
+    "websocket",
+    "express",
+    "mongodb",
+    "firebase"
+  ],
+  "author": "Monitoring System Team",
+  "license": "MIT",
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
