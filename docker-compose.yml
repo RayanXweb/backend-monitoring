@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: monitoring-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: monitoring-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build: .
+    container_name: monitoring-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/monitoring?authSource=admin
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+
+  frontend:
+    build: ../frontend
+    container_name: monitoring-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://backend:5000/api
+      VITE_WEBSOCKET_URL: ws://backend:5000
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
+  redis_data:
