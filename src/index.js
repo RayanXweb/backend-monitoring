@@ -22,7 +22,7 @@ const exportRoutes = require('./routes/export.routes');
 const alertRoutes = require('./routes/alert.routes');
 const profileRoutes = require('./routes/profile.routes');
 const docsRoutes = require('./routes/docs.routes');
-
+app.use('/api/docs', docsRoutes);
 // Socket
 const {
   initializeSocket,
@@ -125,6 +125,7 @@ app.use((req, res, next) => {
   });
   next();
 });
+
 
 /* ===========================
    RATE LIMITERS
